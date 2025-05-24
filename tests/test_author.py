@@ -1,6 +1,9 @@
 import pytest 
 from lib.db.connection import get_connection
 from lib.models.author import Author
+from lib.models.magazine import Magazine
+from lib.models.article import Article
+
 
 def setup_function():
     conn = get_connection()
@@ -10,6 +13,7 @@ def setup_function():
     cursor.execute("DELETE FROM authors")
     conn.commit()
     conn.close()
+    
 
 def test_create_author():
     author = Author("Test Author")
@@ -37,4 +41,15 @@ def test_invalid_name_type():
     with pytest.raises(ValueError):
         author = Author(123)  
 
+def test_author_with_most_articles():
+    a1 = Author("Jane"); a1.save()
+    a2 = Author("John"); a2.save()
+    mag = Magazine("World Today", "News"); mag.save()
 
+    Article("News 1", a1.id, mag.id).save()
+    Article("News 2", a1.id, mag.id).save()
+    Article("Opinion", a2.id, mag.id).save()
+
+    top_author = Author.most_articles()  
+    assert isinstance(top_author, Author)
+    assert top_author.name == "Jane"

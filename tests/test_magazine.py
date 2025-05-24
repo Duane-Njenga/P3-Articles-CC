@@ -1,6 +1,10 @@
 import pytest 
 from lib.db.connection import get_connection
 from lib.models.magazine import Magazine
+from lib.models.article import Article
+from lib.models.author import Author
+
+
 
 def setup_function():
     conn = get_connection()
@@ -59,3 +63,43 @@ def test_invalid_category_type():
 def test_invalid_category_length():
     with pytest.raises(ValueError):
         mag = Magazine("Test Name", "") 
+
+def test_authors_for_magazine():
+    author1 = Author("Author One"); author1.save()
+    author2 = Author("Author Two"); author2.save()
+    mag = Magazine("Tech Monthly", "Technology"); mag.save()
+    Article("AI Revolution", author1.id, mag.id).save()
+    Article("Cybersecurity", author2.id, mag.id).save()
+
+    authors = mag.authors()  
+    author_names = [author.name for author in authors]
+
+    assert "Author One" in author_names
+    assert "Author Two" in author_names
+    assert len(authors) == 2
+
+def test_magazines_with_multiple_authors():
+    mag1 = Magazine("Culture Weekly", "Culture"); mag1.save()
+    mag2 = Magazine("Solo Digest", "Lifestyle"); mag2.save()
+
+    author1 = Author("Alice"); author1.save()
+    author2 = Author("Bob"); author2.save()
+
+    Article("Article A", author1.id, mag1.id).save()
+    Article("Article B", author2.id, mag1.id).save()
+    Article("Solo Piece", author1.id, mag2.id).save()
+
+    mags = Magazine.all_authors()  
+    titles = [m.title for m in mags]
+
+    assert "Culture Weekly" in titles
+    assert "Solo Digest" not in titles
+
+def test_article_count_per_magazine():
+    mag = Magazine("Science World", "Science"); mag.save()
+    author = Author("Dr. Smith"); author.save()
+
+    Article("Quantum Physics", author.id, mag.id).save()
+    Article("Black Holes", author.id, mag.id).save()
+
+    assert mag.article_count() == 2  # Assume this method exists

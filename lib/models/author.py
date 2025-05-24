@@ -1,6 +1,5 @@
 from lib.db.connection import get_connection
 
-
 class Author:
     all = {}
     def __init__(self, name, id = None):
@@ -64,5 +63,65 @@ class Author:
         else:
             return "Author not found"
         
+    def articles(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        sql ="""
+        SELECT * FROM articles
+        WHERE author_id = ?
+        """
+        cursor.execute(sql, (self.id,))
+        return cursor.fetchall()
 
+    def magazines(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        sql ="""
+        SELECT DISTINCT m.* FROM magazines m
+        JOIN articles a ON m.id = a.magazine_id
+        WHERE a.author_id = ?
+        """
+        cursor.execute(sql, (self.id,))
+        return cursor.fetchall()
+    
+    @classmethod
+    def most_articles(cls):
+        """Find the author who has written the most articles using SQL query."""
+    
+        conn = get_connection()
+        cursor = conn.cursor()
         
+        sql = """
+            SELECT authors.id, authors.name, COUNT(articles.id) as article_count
+            FROM authors
+            LEFT JOIN articles ON authors.id = articles.author_id
+            GROUP BY authors.id, authors.name
+            ORDER BY article_count DESC
+            LIMIT 1
+        """
+        
+        cursor.execute(sql)
+        row = cursor.fetchone()
+        
+        conn.close()
+        
+        if row:   
+            article_count = row[2]
+            return cls.find_by_name(name=row[1])
+        
+        return None
+    
+
+if __name__ == "__main__":
+    from lib.models.article import Article
+    from lib.models.magazine import Magazine
+
+    a1 = Author("Jane"); a1.save()
+    a2 = Author("John"); a2.save()
+    mag = Magazine("World Today", "News"); mag.save()
+
+    Article("News 1", a1.id, mag.id).save()
+    Article("News 2", a1.id, mag.id).save()
+    Article("Opinion", a2.id, mag.id).save()
+
+    top_author = Author.most_articles()

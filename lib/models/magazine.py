@@ -103,3 +103,5 @@ class Magazine:
             return Magazine(name=row[1], category=row[2], id=row[0])
         else:
             raise Exception(f"No Magazine found with an category of {category} ")
+        
+        
