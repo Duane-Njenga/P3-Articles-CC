@@ -1,4 +1,5 @@
 from lib.db.connection import get_connection
+from lib.models.author import Author
 class Magazine:
     all = {}
     def __init__(self,name, category, id = None):
@@ -104,4 +105,49 @@ class Magazine:
         else:
             raise Exception(f"No Magazine found with an category of {category} ")
         
+    def authors(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        sql ="""
+            SELECT DISTINCT a.* FROM authors a
+            JOIN articles ar ON ar.author_id = a.id
+            WHERE ar.magazine_id = ?
+        """
+        cursor.execute(sql, (self.id,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [Author(name=row[1], id=row[0]) for row in rows]      
+    
+    @classmethod
+    def all_authors(cls):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        sql = """
+        SELECT m.id, m.name, m.category FROM magazines m
+        JOIN articles a ON m.id = a.magazine_id
+        GROUP BY m.id
+        HAVING COUNT(DISTINCT a.author_id) >= 2 
+        """
+
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+        magazines = [cls(name=row[1], category=row[2], id=row[0]) for row in rows]
+        conn.close()
+
+        return magazines
         
+    def article_count(self):
+        sql = """
+        SELECT COUNT(*) FROM articles
+        WHERE magazine_id = ?
+        """
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(sql, (self.id,))
+        count = cursor.fetchone()[0]
+
+        return count

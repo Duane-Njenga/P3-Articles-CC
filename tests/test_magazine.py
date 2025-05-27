@@ -89,11 +89,13 @@ def test_magazines_with_multiple_authors():
     Article("Article B", author2.id, mag1.id).save()
     Article("Solo Piece", author1.id, mag2.id).save()
 
-    mags = Magazine.all_authors()  
-    titles = [m.title for m in mags]
+    magazines = Magazine.all_authors()  
+    names = [magazine.name for magazine in magazines]
+    for mag in magazines:
+        print(mag.name, mag.id)
 
-    assert "Culture Weekly" in titles
-    assert "Solo Digest" not in titles
+    assert "Culture Weekly" in names
+    assert "Solo Digest" not in names
 
 def test_article_count_per_magazine():
     mag = Magazine("Science World", "Science"); mag.save()
@@ -102,4 +104,4 @@ def test_article_count_per_magazine():
     Article("Quantum Physics", author.id, mag.id).save()
     Article("Black Holes", author.id, mag.id).save()
 
-    assert mag.article_count() == 2  # Assume this method exists
+    assert mag.article_count() == 2  
