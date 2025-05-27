@@ -105,7 +105,7 @@ class Magazine:
         else:
             raise Exception(f"No Magazine found with an category of {category} ")
         
-    def authors(self):
+    def contributors(self):
         conn = get_connection()
         cursor = conn.cursor()
         sql ="""
@@ -119,7 +119,7 @@ class Magazine:
         return [Author(name=row[1], id=row[0]) for row in rows]      
     
     @classmethod
-    def all_authors(cls):
+    def contributing_authors(cls):
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -138,6 +138,20 @@ class Magazine:
 
         return magazines
         
+    def article_titles(self, cursor):
+        sql = """
+        SELECT title FROM articles
+        WHERE magazine_id = ?
+        """
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(sql, (self.id,))
+        rows = cursor.fetchall()
+        return [row[0] for row in rows]
+
+    
     def article_count(self):
         sql = """
         SELECT COUNT(*) FROM articles

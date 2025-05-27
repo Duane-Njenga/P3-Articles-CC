@@ -84,6 +84,31 @@ class Author:
         cursor.execute(sql, (self.id,))
         return cursor.fetchall()
     
+    def add_article(self, magazine, title, cursor):
+        sql = """
+        INSERT INTO articles (title, magazine_id, author_id)
+        VALUES (?, ?, ?)
+        """
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(sql, (title, magazine['id'], self.id))
+
+    def topic_areas(self, cursor):
+        sql = """
+        SELECT DISTINCT m.category
+        FROM magazines m
+        JOIN articles a ON m.id = a.magazine_id
+        WHERE a.author_id = ?
+        """
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(sql, (self.id,))
+        rows = cursor.fetchall()
+        return [row[0] for row in rows]
+
+
     @classmethod
     def most_articles(cls):
         """Find the author who has written the most articles using SQL query."""

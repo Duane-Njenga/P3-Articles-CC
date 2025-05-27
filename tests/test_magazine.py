@@ -71,14 +71,14 @@ def test_authors_for_magazine():
     Article("AI Revolution", author1.id, mag.id).save()
     Article("Cybersecurity", author2.id, mag.id).save()
 
-    authors = mag.authors()  
+    authors = mag.contributors()  
     author_names = [author.name for author in authors]
 
     assert "Author One" in author_names
     assert "Author Two" in author_names
     assert len(authors) == 2
 
-def test_magazines_with_multiple_authors():
+def test_contributing_authors():
     mag1 = Magazine("Culture Weekly", "Culture"); mag1.save()
     mag2 = Magazine("Solo Digest", "Lifestyle"); mag2.save()
 
@@ -89,7 +89,7 @@ def test_magazines_with_multiple_authors():
     Article("Article B", author2.id, mag1.id).save()
     Article("Solo Piece", author1.id, mag2.id).save()
 
-    magazines = Magazine.all_authors()  
+    magazines = Magazine.contributing_authors_authors()  
     names = [magazine.name for magazine in magazines]
     for mag in magazines:
         print(mag.name, mag.id)
